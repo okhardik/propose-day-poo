@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Surprise for Poo ✨</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --hot-pink: #ff2a6d;
+            --soft-pink: #ffafcc;
+            --bg-color: #fdf0f5;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden; touch-action: manipulation;
+        }
+
+        .container {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100vh; text-align: center;
+            padding: 20px; box-sizing: border-box;
+        }
+
+        .step { display: none; width: 100%; max-width: 400px; }
+        .step.active { display: block; animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        h1 { font-family: 'Fredoka One', cursive; color: var(--hot-pink); margin-bottom: 10px; }
+        p { color: #555; font-size: 1.1rem; }
+
+        /* 1. SCRATCH CARD */
+        #scratch-container {
+            position: relative; width: 280px; height: 150px;
+            margin: 20px auto; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background: white; display: flex; align-items: center; justify-content: center;
+        }
+        #scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; z-index: 2; }
+        .hidden-name { font-size: 3rem; font-family: 'Fredoka One'; color: var(--hot-pink); z-index: 1; }
+
+        /* 2. MEERKAT STATS */
+        .display-img { width: 100%; border-radius: 25px; border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .stats-list { text-align: left; background: white; padding: 15px; border-radius: 20px; margin-top: 15px; font-size: 0.95rem; }
+        .stat-item { margin: 8px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .stat-label { font-weight: bold; color: #444; }
+        .stat-val { color: var(--hot-pink); font-weight: bold; }
+
+        /* 3. INTERACTIVE GAME */
+        #game-area { width: 100%; height: 300px; background: #fff; border-radius: 20px; position: relative; overflow: hidden; border: 2px dashed var(--soft-pink); margin-top: 15px; }
+        .falling-heart { position: absolute; font-size: 2.5rem; cursor: pointer; user-select: none; }
+
+        /* 4. PROPOSAL */
+        .btn {
+            background: var(--hot-pink); color: white; border: none;
+            padding: 15px 35px; border-radius: 50px; font-weight: bold;
+            font-size: 1.1rem; cursor: pointer; margin-top: 20px;
+            box-shadow: 0 8px 20px rgba(255, 42, 109, 0.3); transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.95); }
+        #no-btn { position: absolute; transition: 0.1s ease; }
+
+        .progress-text { font-weight: bold; color: var(--hot-pink); margin-top: 10px; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- STEP 1: SCRATCH CARD -->
+        <div id="step1" class="step active">
+            <h1>Magic Reveal ✨</h1>
+            <p>Scratch to see who is my favorite girlfriend in the whole world...</p>
+            <div id="scratch-container">
+                <div class="hidden-name">POO ❤️</div>
+                <canvas id="scratch-canvas" width="280" height="150"></canvas>
+            </div>
+            <p id="hint-text" style="font-size: 0.8rem; color: #999;">Screen ko thoda ghis do! 👆</p>
+            <button id="next1" class="btn" style="display:none;" onclick="nextStep(2)">SHOCKING! Next 👉</button>
+        </div>
+
+        <!-- STEP 2: MEERKAT STATS -->
+        <div id="step2" class="step">
+            <h1>Boyfriend Report Card 📊</h1>
+            <img src="meerkat.png" class="display-img">
+            <div class="stats-list">
+                <div class="stat-item"><span class="stat-label">Bhes (Arguments) won:</span> <span class="stat-val">1 (Galti se)</span></div>
+                <div class="stat-item"><span class="stat-label">Ladai won:</span> <span class="stat-val">0 (Darr lagta hai 🏃‍♂️)</span></div>
+                <div class="stat-item"><span class="stat-label">Listening to Gossip:</span> <span class="stat-val">100/10 👂</span></div>
+                <div class="stat-item"><span class="stat-label">Poo's Mood Handler:</span> <span class="stat-val">Expert ⭐</span></div>
+                <div class="stat-item"><span class="stat-label">Poo's Snack Delivery:</span> <span class="stat-val">Free & Fast 🍕</span></div>
+            </div>
+            <button class="btn" onclick="nextStep(3)">Aage dekho! 👉</button>
+        </div>
+
+        <!-- STEP 3: INTERACTIVE GAME -->
+        <div id="step3" class="step">
+            <h1>Catch My Love! ❤️</h1>
+            <p>Collect 10 hearts to unlock the secret message!</p>
+            <div id="game-area"></div>
+            <div class="progress-text">Hearts Collected: <span id="score">0</span>/10</div>
+            <button id="next3" class="btn" style="display: none;" onclick="nextStep(4)">CLICK TO UNLOCK 🔑</button>
+        </div>
+
+        <!-- STEP 4: THE PROPOSAL -->
+        <div id="step4" class="step">
+            <h1 style="font-size: 2.2rem;">Poo... 🥹</h1>
+            <p>I may not be the smartest, but I'm definitely the luckiest because I have you.</p>
+            <h2 style="color: var(--hot-pink);">Will you be mine forever? ❤️</h2>
+            <div style="height: 150px; position: relative; margin-top: 30px;">
+                <button class="btn" style="width: 140px;" onclick="sayYes()">YESSS! 🥰</button>
+                <button class="btn" id="no-btn" onmouseover="moveNo()" onclick="moveNo()">NO 😜</button>
+            </div>
+        </div>
+
+        <!-- STEP 5: FINAL HAPPY DONKEY -->
+        <div id="step5" class="step">
+            <h1>I LOVE YOU BUB! ❤️</h1>
+            <img src="donkey.png" class="display-img">
+            <p>Thank you for saying YES! You made my life amazing.</p>
+            <p style="font-size: 0.9rem; margin-top: 20px; color: var(--hot-pink); font-weight: bold;">Happy Propose Day, My Favorite! ✨</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- STEP NAVIGATION ---
+        function nextStep(n) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + n).classList.add('active');
+            if(n === 3) startHeartGame();
+        }
+
+        // --- STEP 1: SCRATCH CARD LOGIC ---
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d');
+        let scratchedPixels = 0;
+
+        ctx.fillStyle = '#C0C0C0'; // Silver color
+        ctx.fillRect(0, 0, 280, 150);
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillStyle = '#777';
+        ctx.fillText('SCRATCH HERE!', 65, 85);
+
+        function scratch(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.pageX || e.touches[0].pageX) - rect.left;
+            const y = (e.pageY || e.touches[0].pageY) - rect.top;
+            
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x, y, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            scratchedPixels++;
+            if(scratchedPixels > 40) { // Shows button after some scratching
+                document.getElementById('next1').style.display = 'inline-block';
+                document.getElementById('hint-text').style.opacity = '0';
+            }
+        }
+        canvas.addEventListener('mousemove', scratch);
+        canvas.addEventListener('touchmove', scratch);
+
+        // --- STEP 3: HEART GAME LOGIC ---
+        let score = 0;
+        function startHeartGame() {
+            const area = document.getElementById('game-area');
+            const spawnInterval = setInterval(() => {
+                if(score >= 10) {
+                    clearInterval(spawnInterval);
+                    document.getElementById('next3').style.display = 'inline-block';
+                    return;
+                }
+                const heart = document.createElement('div');
+                heart.className = 'falling-heart';
+                heart.innerHTML = '❤️';
+                heart.style.left = Math.random() * 85 + '%';
+                heart.style.top = '-50px';
+                
+                area.appendChild(heart);
+
+                const duration = Math.random() * 1000 + 1500;
+                const anim = heart.animate([
+                    { top: '-50px', transform: 'rotate(0deg)' },
+                    { top: '350px', transform: `rotate(${Math.random() * 360}deg)` }
+                ], { duration: duration, easing: 'linear' });
+
+                heart.onclick = () => {
+                    score++;
+                    document.getElementById('score').innerText = score;
+                    heart.remove();
+                    confetti({ particleCount: 15, scalar: 0.7, origin: { x: 0.5, y: 0.7 } });
+                };
+
+                anim.onfinish = () => heart.remove();
+            }, 600);
+        }
+
+        // --- STEP 4: PROPOSAL LOGIC ---
+        function moveNo() {
+            const btn = document.getElementById('no-btn');
+            const x = Math.random() * (window.innerWidth - 120);
+            const y = Math.random() * (window.innerHeight - 150);
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+        }
+
+        function sayYes() {
+            nextStep(5);
+            var end = Date.now() + (15 * 1000);
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff2a6d', '#ffafcc'] });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff2a6d', '#ffafcc'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+    </script>
+</body>
+</html>
